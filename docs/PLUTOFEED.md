@@ -1,6 +1,6 @@
 # plutofeed — Semifeed·shitposts98 공용 Meta 앱
 
-> **현재 상태 (2026-10-31)**: 앱 생성 완료 · 앱 ID `1088929757313682` · 비즈니스 포트폴리오 Pluto · 로그인 구성 ID `1873978530427706` (시스템 사용자 토큰, **만료 없음**) · 리디렉션 URL 저장됨 · @shitposts98 테스터 초대 보냄. 남은 일: 초대 수락 → 토큰 생성 (3단계), semiwire 추가.
+> **현재 상태 (2026-10-31)**: 앱 생성 완료 · 앱 ID `1088929757313682` · 비즈니스 포트폴리오 Pluto · 로그인 구성 ID `1873978530427706` (시스템 사용자 토큰, **만료 없음**) · 리디렉션 URL 저장됨 · @shitposts98·@semifeed 테스터 초대 보냄 (대기 중). 남은 일: 각 계정에서 초대 수락 → 토큰 생성 (3단계).
 >
 > Meta가 앱 이름에 "gram"을 금지해서 이름은 plutogram이 아니라 plutofeed예요.
 
@@ -21,7 +21,7 @@
 ## 만드는 순서
 
 ### 0. 준비
-- [ ] semiwire와 shitposts98 둘 다 **프로페셔널(크리에이터 또는 비즈니스) 계정**이어야 해요.
+- [ ] semifeed와 shitposts98 둘 다 **프로페셔널(크리에이터 또는 비즈니스) 계정**이어야 해요.
 - [ ] **비즈니스 포트폴리오**가 필요해요 (business.facebook.com). 없으면 하나 만드세요. 이름은 `plutofeed` 정도면 충분해요.
 
 ### 1. 앱 만들기 (developers.facebook.com → My Apps → Create App)
@@ -48,7 +48,7 @@
   ```
   출력에서 확인할 것은 세 가지예요. `instagram account: @계정 id ...`가 맞는 계정인지, `expires: never`인지, `scopes`에 `instagram_content_publish`가 있는지요. 앱 ID와 시크릿은 App settings → Basic에 있어요.
 
-semiwire와 shitposts98에 각각 이걸 해서 **토큰 두 개**를 받아요. 하나의 토큰이 같은 포트폴리오의 두 계정을 다 다룰 수도 있지만, 계정별로 따로 받아야 한쪽을 끊어도 다른 쪽이 살아 있어요.
+semifeed와 shitposts98에 각각 이걸 해서 **토큰 두 개**를 받아요. 하나의 토큰이 같은 포트폴리오의 두 계정을 다 다룰 수도 있지만, 계정별로 따로 받아야 한쪽을 끊어도 다른 쪽이 살아 있어요.
 
 ### 4. 각 봇에 넣기
 | | shitposts98 | Semifeed |
