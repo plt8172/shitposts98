@@ -3,6 +3,9 @@
   "date": "2026-10-31",
   "text": "me in the mirror at 8am trying to fix my hair like i haven't slept in 3 days 🧑⏳",
   "created_at": 1793378357.9363103,
-  "status": "made",
-  "llm_model": "poolside/laguna-xs-2.1:free"
+  "status": "published",
+  "llm_model": "poolside/laguna-xs-2.1:free",
+  "published_at": 1793378368.9280863,
+  "media_id": "17955376689313743",
+  "permalink": "https://www.instagram.com/p/DfICAZLF5Lp/"
 }
