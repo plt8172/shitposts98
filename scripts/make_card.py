@@ -62,7 +62,18 @@ def make(llm=writer.call_llm, render=None) -> Path | None:
             "llm_model": writer.LAST_MODEL}
     json_path.write_text(json.dumps(card, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"[make] {json_path.relative_to(ROOT) if json_path.is_relative_to(ROOT) else json_path}\n{text}")
+    annotate(text, writer.LAST_MODEL)
     return json_path
+
+
+def annotate(text: str, model: str | None) -> None:
+    """On GitHub Actions, show the line on the run's summary page (as a notice
+    annotation), so it can be read without downloading the artifact."""
+    import os
+    if os.environ.get("GITHUB_ACTIONS") != "true":
+        return
+    body = text.replace("%", "%25").replace("\r", "").replace("\n", "%0A")
+    print(f"::notice title=card ({model or 'unknown model'})::{body}")
 
 
 def main() -> None:
