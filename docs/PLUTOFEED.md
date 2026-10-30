@@ -1,10 +1,14 @@
-# plutogram — Semifeed·shitposts98 공용 Meta 앱
+# plutofeed — Semifeed·shitposts98 공용 Meta 앱
+
+> **현재 상태 (2026-10-31)**: 앱 생성 완료 · 앱 ID `1088929757313682` · 비즈니스 포트폴리오 Pluto · 로그인 구성 ID `1873978530427706` (시스템 사용자 토큰, **만료 없음**) · 리디렉션 URL 저장됨 · @shitposts98 테스터 초대 보냄. 남은 일: 초대 수락 → 토큰 생성 (3단계), semiwire 추가.
+>
+> Meta가 앱 이름에 "gram"을 금지해서 이름은 plutogram이 아니라 plutofeed예요.
 
 두 봇이 함께 쓰는 Meta 앱이에요. 2026년 10월 기준으로 **새로 만드는 앱은 "API setup with Unified login"만 쓸 수 있어요.** 기존 "Instagram login" 방식(`graph.instagram.com`)은 새 앱에서 선택할 수 없어요.
 
 ## Instagram login과 뭐가 다른가
 
-| | Instagram login (기존 Semifeed 앱) | Unified login (plutogram) |
+| | Instagram login (기존 Semifeed 앱) | Unified login (plutofeed) |
 | --- | --- | --- |
 | API 주소 | `graph.instagram.com` | `graph.facebook.com/v26.0` |
 | 토큰 종류 | Instagram 사용자 토큰 (60일, 매주 갱신 필요) | **시스템 사용자 토큰**. 만료 기간을 설정에서 고를 수 있어요 |
@@ -18,18 +22,18 @@
 
 ### 0. 준비
 - [ ] semiwire와 shitposts98 둘 다 **프로페셔널(크리에이터 또는 비즈니스) 계정**이어야 해요.
-- [ ] **비즈니스 포트폴리오**가 필요해요 (business.facebook.com). 없으면 하나 만드세요. 이름은 `plutogram` 정도면 충분해요.
+- [ ] **비즈니스 포트폴리오**가 필요해요 (business.facebook.com). 없으면 하나 만드세요. 이름은 `plutofeed` 정도면 충분해요.
 
 ### 1. 앱 만들기 (developers.facebook.com → My Apps → Create App)
-- [ ] 앱 이름: `plutogram`
+- [ ] 앱 이름: `plutofeed`
 - [ ] 사용 사례: **Manage messaging & content on Instagram**
 - [ ] 비즈니스 포트폴리오: 0단계에서 만든 것을 연결해요. Unified login은 포트폴리오가 소유한 앱이어야 해요.
 
 ### 2. 로그인 설정 (config) 만들기
 - [ ] Use cases → Manage messaging & content on Instagram → **Customize** → **API setup with Unified login**
 - [ ] Configure your app → **Create new configuration**
-- [ ] **Edit permissions**에서 꼭 필요한 것만 남겨요: `instagram_basic`, `instagram_content_publish`. 게시만 하니까 메시지와 광고 권한(`instagram_manage_messages`, `ads_*`)은 빼도 돼요. 대시보드가 `instagram_manage_messages`를 필수로 요구하면 그대로 둬요.
-- [ ] 미리보기에 나오는 **토큰 만료 기간**을 **Never(만료 없음)**로 골라요. 이 단계가 제일 중요해요. 해당 옵션이 없으면 가장 긴 기간을 고르세요.
+- [x] 권한 (7개): `instagram_basic`, `instagram_content_publish`, `instagram_manage_comments`, `instagram_manage_insights`, `instagram_manage_messages`(필수), `ads_management`, `ads_read`. 게시에 꼭 필요한 건 앞의 두 개고, 나머지는 댓글 관리·인사이트 분석을 나중에 붙일 수 있게 넣어 둔 거예요. 광고 계정은 선택 자산이라 연결 안 해도 돼요.
+- [x] 토큰 만료: 템플릿 기본값이 **만료되지 않음(시스템 사용자 토큰)**이에요.
 - [ ] **Use this configuration**
 - [ ] **Redirect URL**: HTTPS 주소 하나가 필요해요. 대시보드에서 토큰을 직접 생성할 거라 실제로 쓰이지는 않아요. Semifeed Worker 주소(`https://semifeed.semifeed.workers.dev/`)를 넣고 Save하면 돼요.
 

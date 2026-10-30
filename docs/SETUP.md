@@ -6,11 +6,11 @@
 
 - [ ] @shitposts98을 **크리에이터 계정**으로 전환해요 (앱 → 설정 → 계정 유형 및 도구).
 
-## 2. Meta 앱 (plutogram)
+## 2. Meta 앱 (plutofeed)
 
-Semifeed와 같이 쓰는 **plutogram** 앱(Unified login)에서 @shitposts98 토큰을 받아요. 앱 만들기부터 토큰 확인까지는 [`PLUTOGRAM.md`](PLUTOGRAM.md)에 정리돼 있어요.
+Semifeed와 같이 쓰는 **plutofeed** 앱(Unified login)에서 @shitposts98 토큰을 받아요. 앱 만들기부터 토큰 확인까지는 [`PLUTOFEED.md`](PLUTOFEED.md)에 정리돼 있어요.
 
-- [ ] PLUTOGRAM.md 0~3단계를 진행해서 @shitposts98 토큰을 받아요 (만료: never).
+- [ ] PLUTOFEED.md 0~3단계를 진행해서 @shitposts98 토큰을 받아요 (만료: never).
 - [ ] `check_token.py`가 출력한 Instagram account id를 `config/bot.json`의 `ig_user_id`에 넣어요. `FILL_ME` 상태로 두면 게시 단계에서 멈춰요.
 
 ## 3. GitHub 레포
@@ -23,7 +23,7 @@ Semifeed와 같이 쓰는 **plutogram** 앱(Unified login)에서 @shitposts98 �
 | 이름 | 값 | 어디서 |
 | --- | --- | --- |
 | `LLM_API_KEY` | Groq API 키 | console.groq.com/keys (Yunoballizer 키를 재사용해도 돼요) |
-| `IG_ACCESS_TOKEN` | 2단계에서 받은 plutogram 토큰 | plutogram 앱 → API setup with Unified login → Generate token |
+| `IG_ACCESS_TOKEN` | 2단계에서 받은 plutofeed 토큰 | plutofeed 앱 → API setup with Unified login → Generate token |
 | `SLACK_WEBHOOK_URL` | 밈 채널 전용 Incoming Webhook | Slack 앱 → Incoming Webhooks → 밈 채널 선택 |
 
 토큰 만료를 never로 받았다면 갱신할 일이 없어요. 혹시 만료되거나 끊기면 게시 실패 알림이 Slack으로 오니까, 그때 토큰만 다시 받아서 이 secret을 바꾸면 돼요.

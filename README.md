@@ -11,7 +11,7 @@
 | 승인 | Slack 버튼 | 없음 (게시 후 알림만) |
 | 실행 | Claude 예약 작업 + Cloudflare Worker | GitHub Actions만 |
 | 이미지 호스팅 | raw.githubusercontent.com | 같음 |
-| 게시 API | Instagram API (Graph API) | 같음, 공용 Meta 앱 **plutogram** (Unified login) |
+| 게시 API | Instagram API (Graph API) | 같음, 공용 Meta 앱 **plutofeed** (Unified login) |
 | 토큰 | Worker cron으로 갱신 → KV | 만료 없는 시스템 사용자 토큰 → GitHub Secret (갱신 불필요) |
 
 Semifeed의 Worker는 **Slack 버튼 콜백을 받으려고** 있어요. 이 봇은 승인이 없어서 밖에서 들어오는 요청이 없고, Worker가 할 일이 없어요. 반대로 카드 렌더링에는 Chromium이 필요한데, Worker에서는 돌릴 수 없어요. 그래서 cron, Chromium, git 커밋을 한곳에서 할 수 있는 GitHub Actions 하나로 끝냈어요. 서버도, Cloudflare 계정도, 이미지 호스팅 키도 필요 없어요.
@@ -52,7 +52,7 @@ cards/                     만든 카드와 게시 결과
 fonts/                     Inter (SIL OFL 1.1)
 ```
 
-세팅은 [`docs/SETUP.md`](docs/SETUP.md), Meta 앱은 [`docs/PLUTOGRAM.md`](docs/PLUTOGRAM.md)를 보세요.
+세팅은 [`docs/SETUP.md`](docs/SETUP.md), Meta 앱은 [`docs/PLUTOFEED.md`](docs/PLUTOFEED.md)를 보세요.
 
 ## 로컬에서 확인
 

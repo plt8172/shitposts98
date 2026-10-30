@@ -1,6 +1,6 @@
 """One-time helper: check a Unified Login token and find the Instagram account ID.
 
-After "Generate token" in the plutogram app dashboard, run:
+After "Generate token" in the plutofeed app dashboard, run:
 
     IG_ACCESS_TOKEN=... python scripts/check_token.py
     # optional, to also print the expiry:

@@ -1,7 +1,7 @@
 """Step 2 of a run: publish a committed card to Instagram via the Graph API.
 
 Uses "Instagram API with Unified Login" (graph.facebook.com) through the shared
-"plutogram" Meta app. The token is a Business Integration System User Access
+"plutofeed" Meta app. The token is a Business Integration System User Access
 Token, so API calls address the Instagram account by its numeric ID
 (config/bot.json → ig_user_id), never "me" (which would be the system user).
 No Facebook Page needed. Instagram downloads the image
@@ -96,7 +96,7 @@ def publish(card_path: Path, publisher=publish_image) -> dict:
     except Exception as exc:
         card.update(status="failed", error=str(exc)[:500])
         save_card(card)
-        hint = ("\n토큰이 만료됐거나 끊긴 것 같아요. plutogram 앱에서 토큰을 다시 생성해 "
+        hint = ("\n토큰이 만료됐거나 끊긴 것 같아요. plutofeed 앱에서 토큰을 다시 생성해 "
                 "IG_ACCESS_TOKEN secret을 바꿔주세요.") if '"code":190' in str(exc).replace(" ", "") else ""
         notify_slack(f"❌ shitposts98 publish failed: {exc}{hint}")
         raise
