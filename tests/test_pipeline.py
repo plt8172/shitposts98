@@ -107,3 +107,21 @@ def test_publish_refuses_placeholder_account_id(cards_dir, monkeypatch):
                           render=fake_render)
     with pytest.raises(RuntimeError, match="numeric"):
         publish.publish(path, publisher=lambda *a, **k: pytest.fail("should not call"))
+
+
+def test_clean_strips_reasoning_blocks():
+    assert writer.clean("<think>user wants a joke...</think>\n\"my fridge hums louder than my ambitions\"") \
+        == "my fridge hums louder than my ambitions"
+    assert writer.clean("planning the joke</think>my wifi has commitment issues") \
+        == "my wifi has commitment issues"
+
+
+def test_llm_errors_count_as_failed_attempts(monkeypatch):
+    monkeypatch.setattr(writer.time, "sleep", lambda s: None)
+    calls = iter([RuntimeError("429 rate limited"), "", "my calendar is just a list of things i will avoid"])
+    def flaky(prompt):
+        item = next(calls)
+        if isinstance(item, Exception):
+            raise item
+        return item
+    assert writer.write_post([], llm=flaky) == "my calendar is just a list of things i will avoid"

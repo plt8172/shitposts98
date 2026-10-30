@@ -1,9 +1,15 @@
 """Have an LLM write one shitpost line in the account's voice.
 
 Design intent:
-- Any OpenAI-compatible chat endpoint works (Groq by default). The key comes
-  from LLM_API_KEY; endpoint and model are in config/bot.json so switching
-  providers is a config change, not a code change.
+- Any OpenAI-compatible chat endpoint works. The default is OpenRouter's
+  `openrouter/free` router, which sends each request to a random free model —
+  no cost, and a different voice per post. The key comes from LLM_API_KEY;
+  endpoint and model are in config/bot.json, so switching providers or pinning
+  one model is a config change, not a code change.
+- Because the model is random, some picks are reasoning models that wrap
+  their answer in <think>…</think> or spend tokens thinking first. The token
+  budget is generous and thinking is stripped, and a failed or empty call just
+  counts as a rejected attempt instead of crashing the run.
 - The voice is steered by config/style_examples.txt: lines you think are funny. The
   model sees them as tone reference only and is told not to reuse them, so
   editing that file is how you tune the humor without touching code.
@@ -17,6 +23,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import time
 import urllib.request
 
 from common import CONFIG_DIR, load_config, read_lines as _read_lines
@@ -91,26 +98,38 @@ def check(text: str, history: list[str]) -> str | None:
 def call_llm(prompt: str) -> str:
     api_key = os.environ.get("LLM_API_KEY")
     if not api_key:
-        raise RuntimeError("Set LLM_API_KEY (OpenAI-compatible key, Groq by default).")
+        raise RuntimeError("Set LLM_API_KEY (OpenAI-compatible key; OpenRouter by default).")
+    global LAST_MODEL
     cfg = load_config()
     payload = json.dumps({
         "model": os.environ.get("LLM_MODEL", cfg["llm_model"]),
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 1.0,
-        "max_tokens": 120,
+        "max_tokens": 1500,
     }).encode()
     req = urllib.request.Request(
         os.environ.get("LLM_API_BASE", cfg["llm_api_base"]),
         data=payload, method="POST",
-        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json",
+                 # Optional OpenRouter attribution headers; ignored by other providers.
+                 "HTTP-Referer": "https://github.com/plt8172/shitposts98",
+                 "X-Title": "shitposts98"},
     )
-    with urllib.request.urlopen(req, timeout=60) as resp:
+    with urllib.request.urlopen(req, timeout=90) as resp:
         body = json.loads(resp.read())
-    return body["choices"][0]["message"]["content"]
+    LAST_MODEL = body.get("model")
+    content = body["choices"][0]["message"].get("content") or ""
+    print(f"[writer] model: {LAST_MODEL}")
+    return content
+
+
+LAST_MODEL: str | None = None
 
 
 def clean(raw: str) -> str:
-    text = raw.strip().strip('"').strip("“”").strip()
+    text = re.sub(r"<think>.*?</think>", "", raw, flags=re.S | re.I)
+    text = text.split("</think>")[-1]  # unclosed opening tag case
+    text = text.strip().strip('"').strip("“”").strip()
     return re.sub(r"\n{3,}", "\n\n", text)
 
 
@@ -120,7 +139,12 @@ def write_post(history: list[str], llm=call_llm) -> str | None:
     recent = "\n".join(f"- {h}" for h in history[-15:]) or "- (none yet)"
     prompt = PROMPT.format(examples=examples, recent=recent, max_chars=MAX_CHARS)
     for attempt in range(1, MAX_ATTEMPTS + 1):
-        text = clean(llm(prompt))
+        try:
+            text = clean(llm(prompt))
+        except Exception as exc:  # rate limit, provider hiccup, odd response
+            print(f"[writer] attempt {attempt} failed: {exc}")
+            time.sleep(5)
+            continue
         reason = check(text, history)
         if reason is None:
             return text

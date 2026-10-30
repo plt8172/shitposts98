@@ -22,7 +22,7 @@ Semifeed와 같이 쓰는 **plutofeed** 앱(Unified login)에서 @shitposts98 �
 
 | 이름 | 값 | 어디서 |
 | --- | --- | --- |
-| `LLM_API_KEY` | Groq API 키 | console.groq.com/keys (Yunoballizer 키를 재사용해도 돼요) |
+| `LLM_API_KEY` | OpenRouter API 키 | openrouter.ai/keys. 무료 모델만 쓰니 결제 등록 없이 돼요. 다른 OpenAI 호환 API로 바꾸려면 `config/bot.json`의 `llm_api_base`·`llm_model`만 고치면 돼요 |
 | `IG_ACCESS_TOKEN` | 2단계에서 받은 plutofeed 토큰 | plutofeed 앱 → API setup with Unified login → Generate token |
 | `SLACK_WEBHOOK_URL` | 밈 채널 전용 Incoming Webhook | Slack 앱 → Incoming Webhooks → 밈 채널 선택 |
 

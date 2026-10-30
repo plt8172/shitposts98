@@ -58,7 +58,8 @@ def make(llm=writer.call_llm, render=None) -> Path | None:
     render(text, jpg_path, name=cfg["name"], handle=cfg["handle"],
            theme=cfg["theme"], avatar=avatar)
 
-    card = {"id": card_id, "date": day, "text": text, "created_at": now, "status": "made"}
+    card = {"id": card_id, "date": day, "text": text, "created_at": now, "status": "made",
+            "llm_model": writer.LAST_MODEL}
     json_path.write_text(json.dumps(card, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"[make] {json_path.relative_to(ROOT) if json_path.is_relative_to(ROOT) else json_path}\n{text}")
     return json_path

@@ -16,7 +16,7 @@
 
 Semifeed의 Worker는 **Slack 버튼 콜백을 받으려고** 있어요. 이 봇은 승인이 없어서 밖에서 들어오는 요청이 없고, Worker가 할 일이 없어요. 반대로 카드 렌더링에는 Chromium이 필요한데, Worker에서는 돌릴 수 없어요. 그래서 cron, Chromium, git 커밋을 한곳에서 할 수 있는 GitHub Actions 하나로 끝냈어요. 서버도, Cloudflare 계정도, 이미지 호스팅 키도 필요 없어요.
 
-기사 선별 같은 판단이 필요 없어서 Claude 예약 작업 대신 LLM API(Groq) 한 번 호출로 충분해요.
+기사 선별 같은 판단이 필요 없어서 Claude 예약 작업 대신 LLM API 한 번 호출로 충분해요. 기본값은 OpenRouter의 무료 라우터 `openrouter/free`로, 요청마다 무료 모델 하나를 무작위로 골라 써서 비용이 없어요.
 
 ## 한 번 실행 = 최대 1개 게시
 
