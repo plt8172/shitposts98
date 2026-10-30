@@ -46,7 +46,8 @@ scripts/writer.py          LLM 호출 + 필터
 scripts/render.py          텍스트 → 카드 JPEG (Playwright, 폰트 내장)
 scripts/make_card.py       1단계: 카드 생성
 scripts/publish.py         2단계: Instagram 게시
-scripts/refresh_token.py   장기 토큰 갱신
+scripts/refresh_token.py   장기 토큰 갱신 (주간 workflow)
+scripts/check_token.py     처음 한 번: 장기 토큰인지 확인·변환
 .github/workflows/         post.yml (하루 3회), refresh-token.yml (매주)
 cards/                     만든 카드와 게시 결과
 fonts/                     Inter (SIL OFL 1.1)

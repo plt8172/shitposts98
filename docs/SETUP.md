@@ -8,13 +8,19 @@
 
 ## 2. Meta 앱 (developers.facebook.com)
 
-Semifeed 앱을 재사용하지 말고 **새 앱**을 만드는 걸 추천해요. 한쪽 토큰이나 권한을 바꿔도 다른 쪽이 안 깨져요.
+**Semifeed 앱을 그대로 재사용해요.** 권한(`instagram_business_basic`, `instagram_business_content_publish`)은 이미 설정돼 있어서 계정만 추가하면 돼요. 토큰은 계정마다 따로 발급되니까, semiwire 토큰과 shitposts98 토큰은 서로 독립이에요.
 
-- [ ] 앱 만들기 → 사용 사례에서 Instagram API(**Instagram 로그인** 방식)를 선택해요. Facebook 페이지는 필요 없어요.
-- [ ] 앱 역할 → Instagram 테스터에 @shitposts98을 추가하고, Instagram 앱에서 초대를 수락해요.
-- [ ] 권한: `instagram_business_basic`, `instagram_business_content_publish`
-- [ ] API 설정 화면에서 @shitposts98 토큰을 생성해요. 이게 `IG_ACCESS_TOKEN`(장기 토큰)이에요.
-- [ ] 같은 화면에 나오는 Instagram 사용자 ID를 `config/bot.json`의 `ig_user_id`에 넣어요. 기본값 `"me"`로도 동작하지만, 명시하는 게 확실해요.
+- [ ] Semifeed 앱 → 앱 역할 → 역할 → **Instagram 테스터**에 @shitposts98을 추가해요.
+- [ ] @shitposts98으로 로그인한 Instagram(웹: 설정 → 앱 및 웹사이트 → 테스터 초대)에서 초대를 수락해요.
+- [ ] 앱 대시보드 → Instagram → **API setup with Instagram login** → 토큰 생성 칸에서 **Add account** → @shitposts98로 로그인 → **Generate token**을 눌러 나온 토큰을 복사해요.
+- [ ] 장기 토큰인지 확인하고 계정 ID도 함께 확인해요:
+  ```bash
+  IG_ACCESS_TOKEN=<복사한 토큰> python scripts/check_token.py
+  ```
+  "long-lived"가 나오면 출력된 토큰을 그대로 쓰면 돼요. 단기 토큰이라고 나오면 같은 API setup 화면의 **Instagram app secret**을 `IG_APP_SECRET=...`으로 붙여 다시 실행해요. 장기 토큰으로 바꿔줘요.
+- [ ] 출력된 토큰이 `IG_ACCESS_TOKEN`이고, 같이 출력된 user_id는 `config/bot.json`의 `ig_user_id`에 넣어요.
+
+이후 갱신은 주간 workflow가 알아서 해요. 토큰 발급은 이번 한 번뿐이에요.
 
 ## 3. GitHub 레포
 
