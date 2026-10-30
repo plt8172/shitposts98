@@ -33,7 +33,7 @@ def fake_render(text, out, **kw):
 
 def test_writer_checks():
     assert writer.check("vote for trump lol", []).startswith("banned")
-    assert writer.check("my sleep schedule is just a suggestion at this point", []) is not None
+    assert writer.check("outfit repeater meal repeater movie rewatcher i know what i like", []) is not None
     assert writer.check("socks vanish in the dryer", ["socks vanish in the dryer"]) is not None
     assert writer.check("x" * 300, []).startswith("too long")
     assert writer.check("follow @someone", []) is not None
@@ -125,3 +125,7 @@ def test_llm_errors_count_as_failed_attempts(monkeypatch):
             raise item
         return item
     assert writer.write_post([], llm=flaky) == "my calendar is just a list of things i will avoid"
+
+
+def test_slash_marker_becomes_line_break():
+    assert writer.clean("nobody: / me at 3am: buying a lamp") == "nobody:\nme at 3am: buying a lamp"

@@ -1,9 +1,32 @@
 # Lines in the page's voice. The bot reads these as tone reference only and
-# is told not to reuse them. Replace these placeholders with lines YOU find
-# funny (10-30 is ideal) — this file is how you tune the humor.
-# One per line; lines starting with # are ignored.
-me after one (1) leetcode easy: time to apply to google
-my sleep schedule is just a suggestion at this point
-pov: you said "just one episode" 6 hours ago
-the group chat when someone says "can i ask a serious question"
-my bank account watching me buy a third iced coffee today
+# is told not to reuse them. One per line; " / " marks a line break in the
+# original meme. Lines starting with # are ignored.
+#
+# Source: memes picked by the account owner (2026-10-31), text only.
+
+# --- the account's own voice (comment by @shitposts98) ---
+Ts a sign js take it cuh 🥀
+
+# --- image memes ---
+THINGS TO SAY AT A FUNERAL: / "Finally" / "I'd hate to be that guy" / "I warned him" / "Sell me this coffin" / "He's faking" / "Who's next?" / "What's the wifi password"
+When i drink alcohol, everyone says I'm an alcoholic. But when i drink Fanta no one says I'm Fantastic
+outfit repeater / meal repeater / movie rewatcher / i know what i like
+You Are not Fully Dressed Until You Wear A smile
+I only wear brown pants.. just incase it happens again
+The Whole World's Economic Systems / Excel
+WE are NOT driving behind ts bro 🥀
+lil dihh big dreams.
+bad morning
+BLUB BLUB (MEOW) BLUB
+mfs be naming their song ANYTHING just to look smart ✌️😩
+pov: you hop on reels first thing on a monday morning 😭🙏💔
+son 😭😭😭😭😭
+how short was your shortest relationship / "5 mins on roblox she had to go eat nd i forgot to add her 💔"
+
+# --- video memes ---
+I don't care about losing friends because the real one is always with me
+can't pet this 🥷 no mo
+Me and my friend on neightouts / "I gotta study for exams" — he never opened a book in his life / "I got work that day bro" — he's unemployed / "I don't have any money bro" — his parents are both CEO's / "My parents won't allow" — he is an orphan
+How it feels to doomscroll at 3am after a long day of doomscrolling
+When my therapist says not talking to anyone and being mysterious is called social anxiety and not aura farming
+Me trying to figure out what's going on in the world via memes since I refuse to watch the news

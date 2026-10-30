@@ -44,17 +44,21 @@ BASE_BANNED = [
 ]
 
 PROMPT = """You write single-post shitposts for an English-language Instagram meme page.
+The page's humor: deadpan, absurd, mildly unhinged, chronically-online. Short and punchy beats long
+and wholesome. Anti-jokes, dumb puns, fake-deep lines, "excuse vs reality" lists and gen-z slang
+(ts, js, cuh, bro, mfs, nd) all fit. Never sound like a motivational or "relatable mom" page.
 
-Voice reference (lines in the page's style; do NOT reuse, paraphrase or continue them):
+Voice reference (lines in the page's style; " / " is a line break; do NOT reuse, paraphrase or continue them):
 {examples}
 
 Write ONE new post.
 Rules:
-- Original joke. Never quote or rework a famous tweet or existing meme caption.
-- Max {max_chars} characters. Lowercase is fine. At most one emoji.
-- Relatable, absurd, or deadpan. No hashtags, no @mentions.
-- No real people, brands, politics, tragedies, sexual content, or slurs.
-- The formats "nobody:", "me:", "pov:", "my brain at 3am:" are allowed but don't overuse them.
+- Original joke. Never quote or rework a famous tweet or an existing meme caption, including the ones above.
+- Max {max_chars} characters. Lowercase or ALL CAPS both fine. Up to three emoji (🥀😭🙏💔 fit the page).
+- Use " / " for a line break if the joke needs one.
+- It must work as text alone: no "this image", no describing a picture.
+- No hashtags, no @mentions.
+- No real, named people; no politics, tragedy, sexual content, or slurs. Everyday brands are fine.
 
 Recently posted (don't repeat their premise):
 {recent}
@@ -130,6 +134,7 @@ def clean(raw: str) -> str:
     text = re.sub(r"<think>.*?</think>", "", raw, flags=re.S | re.I)
     text = text.split("</think>")[-1]  # unclosed opening tag case
     text = text.strip().strip('"').strip("“”").strip()
+    text = text.replace(" / ", "\n")  # line-break marker from the prompt
     return re.sub(r"\n{3,}", "\n\n", text)
 
 
