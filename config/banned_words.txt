@@ -1,0 +1,2 @@
+# Extra words the bot must never post (one per line), on top of the
+# built-in list in scripts/writer.py. Matched as whole words, case-insensitive.

@@ -1,0 +1,38 @@
+# Weekly: refresh the long-lived Instagram token (expires ~60 days after its
+# last refresh) and write it back to the IG_ACCESS_TOKEN secret.
+# The default GITHUB_TOKEN can't edit secrets, so this needs SECRETS_PAT:
+# a fine-grained PAT for this repo only with "Secrets: Read and write".
+name: refresh-token
+
+on:
+  schedule:
+    - cron: "31 17 * * 0"   # Mon 02:31 KST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Refresh and store
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.SECRETS_PAT }}
+        run: |
+          NEW="$(python3 scripts/refresh_token.py)"
+          echo "::add-mask::$NEW"
+          gh secret set IG_ACCESS_TOKEN --repo "$GITHUB_REPOSITORY" --body "$NEW"
+
+      - name: Report failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          [ -n "$SLACK_WEBHOOK_URL" ] && curl -sS -X POST -H 'Content-Type: application/json' \
+            -d '{"text":"⚠️ shitposts98: Instagram token refresh failed. Posting stops when the token expires — check the refresh-token workflow."}' \
+            "$SLACK_WEBHOOK_URL" || true

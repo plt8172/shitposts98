@@ -1,0 +1,9 @@
+# Lines in the page's voice. The bot reads these as tone reference only and
+# is told not to reuse them. Replace these placeholders with lines YOU find
+# funny (10-30 is ideal) — this file is how you tune the humor.
+# One per line; lines starting with # are ignored.
+me after one (1) leetcode easy: time to apply to google
+my sleep schedule is just a suggestion at this point
+pov: you said "just one episode" 6 hours ago
+the group chat when someone says "can i ask a serious question"
+my bank account watching me buy a third iced coffee today

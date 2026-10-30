@@ -1,0 +1,82 @@
+# One run = at most one post: write a line -> render -> commit -> publish.
+# Instagram fetches the JPEG from raw.githubusercontent.com, so the card is
+# pushed before publishing (same hosting trick as Semifeed, no image host).
+name: post
+
+on:
+  schedule:
+    # KST 12:17 / 18:43 / 22:09 (cron is UTC). Off-the-hour minutes because
+    # GitHub delays jobs queued at :00 the most.
+    - cron: "17 3 * * *"
+    - cron: "43 9 * * *"
+    - cron: "9 13 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Write + render only (image attached to the run, nothing posted)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: post
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: |
+          sudo apt-get update -q && sudo apt-get install -yq fonts-noto-color-emoji
+          pip install -q -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Make card
+        id: make
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        run: python scripts/make_card.py
+
+      - name: Attach dry-run image
+        if: env.DRY_RUN == 'true' && steps.make.outputs.card != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: dry-run-card
+          path: cards/
+
+      - name: Commit card
+        if: env.DRY_RUN != 'true' && steps.make.outputs.card != ''
+        run: |
+          git config user.name "shitposts98-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cards
+          git commit -qm "card: ${{ steps.make.outputs.card }}"
+          git pull -q --rebase && git push -q
+
+      - name: Publish
+        if: env.DRY_RUN != 'true' && steps.make.outputs.card != ''
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: python scripts/publish.py "${{ steps.make.outputs.card }}"
+
+      - name: Save publish result
+        # Runs even when publishing failed, so the card records "failed".
+        if: always() && env.DRY_RUN != 'true' && steps.make.outputs.card != ''
+        run: |
+          git add cards
+          git diff --cached --quiet || git commit -qm "published: ${{ steps.make.outputs.card }}"
+          git pull -q --rebase && git push -q
