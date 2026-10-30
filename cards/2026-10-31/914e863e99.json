@@ -3,6 +3,9 @@
   "date": "2026-10-31",
   "text": "me: i tell myself i’ll just have one snack, then i’m digging through the pantry like a survivalist after a apocalypse 😅",
   "created_at": 1793378275.0724728,
-  "status": "made",
-  "llm_model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
+  "status": "published",
+  "llm_model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+  "published_at": 1793378288.419645,
+  "media_id": "18079544948487151",
+  "permalink": "https://www.instagram.com/p/DfIB2RtF02e/"
 }
