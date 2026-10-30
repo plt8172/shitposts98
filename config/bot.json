@@ -5,8 +5,9 @@
   "avatar": null,
   "caption": "",
   "daily_cap": 3,
-  "ig_user_id": "me",
-  "ig_api_version": "v25.0",
+  "ig_user_id": "FILL_ME",
+  "ig_api_version": "v26.0",
+  "graph_host": "https://graph.facebook.com",
   "cards_raw_base": "https://raw.githubusercontent.com/plt8172/shitposts98/main/cards",
   "llm_api_base": "https://api.groq.com/openai/v1/chat/completions",
   "llm_model": "llama-3.3-70b-versatile"

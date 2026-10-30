@@ -19,6 +19,8 @@ def cards_dir(tmp_path, monkeypatch):
     monkeypatch.setattr(make_card, "CARDS_DIR", tmp_path)
     monkeypatch.setattr(make_card, "STOP_FILE", tmp_path / "STOP")
     monkeypatch.setenv("IG_ACCESS_TOKEN", "test-token")
+    cfg = {**common.load_config(), "ig_user_id": "17841400000000000"}
+    monkeypatch.setattr(publish, "load_config", lambda: cfg)
     monkeypatch.delenv("SLACK_WEBHOOK_URL", raising=False)
     return tmp_path
 
@@ -52,10 +54,11 @@ def test_make_then_publish(cards_dir):
 
     seen = {}
     def fake_publisher(url, caption, **kw):
-        seen["url"] = url
+        seen.update(url=url, host=kw["host"], user_id=kw["user_id"])
         return {"media_id": "1", "permalink": "https://instagram.com/p/x"}
 
     publish.publish(path, publisher=fake_publisher)
+    assert seen["host"] == "https://graph.facebook.com" and seen["user_id"].isdigit()
     card = json.loads(path.read_text())
     assert card["status"] == "published" and card["permalink"].endswith("/x")
     assert seen["url"].endswith(f"/{card['date']}/{card['id']}.jpg")
@@ -95,3 +98,12 @@ def test_real_render_is_jpeg(tmp_path):
     out = render("me when the code works on the first try 💀", tmp_path / "c.jpg",
                  name="shitposts98", handle="shitposts98")
     assert out.read_bytes()[:2] == b"\xff\xd8"
+
+
+def test_publish_refuses_placeholder_account_id(cards_dir, monkeypatch):
+    monkeypatch.setattr(publish, "load_config",
+                        lambda: {**common.load_config(), "ig_user_id": "FILL_ME"})
+    path = make_card.make(llm=lambda p: "my alarm and i are in a toxic relationship",
+                          render=fake_render)
+    with pytest.raises(RuntimeError, match="numeric"):
+        publish.publish(path, publisher=lambda *a, **k: pytest.fail("should not call"))

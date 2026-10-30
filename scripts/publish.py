@@ -1,7 +1,10 @@
 """Step 2 of a run: publish a committed card to Instagram via the Graph API.
 
-Uses "Instagram API with Instagram Login" (graph.instagram.com) — no Facebook
-Page needed, same path as Semifeed's Worker. Instagram downloads the image
+Uses "Instagram API with Unified Login" (graph.facebook.com) through the shared
+"plutogram" Meta app. The token is a Business Integration System User Access
+Token, so API calls address the Instagram account by its numeric ID
+(config/bot.json → ig_user_id), never "me" (which would be the system user).
+No Facebook Page needed. Instagram downloads the image
 from the card's raw.githubusercontent.com URL, which is why the repo must be
 public and why this runs only after the card has been pushed.
 
@@ -22,7 +25,6 @@ from pathlib import Path
 
 from common import ROOT, load_config, notify_slack, save_card
 
-GRAPH = "https://graph.instagram.com"
 
 
 def _request(url: str, data: dict | None = None) -> dict:
@@ -49,8 +51,9 @@ def wait_until_public(url: str, attempts: int = 12, delay: float = 5) -> None:
     raise RuntimeError(f"Image never became reachable: {url} (is the repo public?)")
 
 
-def publish_image(image_url: str, caption: str, *, token: str, user_id: str, version: str) -> dict:
-    base = f"{GRAPH}/{version}"
+def publish_image(image_url: str, caption: str, *, token: str, user_id: str, version: str,
+                  host: str = "https://graph.facebook.com") -> dict:
+    base = f"{host.rstrip('/')}/{version}"
     container = _request(f"{base}/{user_id}/media",
                          {"image_url": image_url, "caption": caption, "access_token": token})["id"]
     for _ in range(20):
@@ -84,12 +87,18 @@ def publish(card_path: Path, publisher=publish_image) -> dict:
     try:
         if publisher is publish_image:
             wait_until_public(image_url)
+        if not str(cfg["ig_user_id"]).isdigit():
+            raise RuntimeError("config/bot.json ig_user_id must be the numeric Instagram "
+                               "account ID (run scripts/check_token.py to find it).")
         result = publisher(image_url, cfg.get("caption", ""), token=token,
-                           user_id=cfg["ig_user_id"], version=cfg["ig_api_version"])
+                           user_id=cfg["ig_user_id"], version=cfg["ig_api_version"],
+                           host=cfg.get("graph_host", "https://graph.facebook.com"))
     except Exception as exc:
         card.update(status="failed", error=str(exc)[:500])
         save_card(card)
-        notify_slack(f"❌ shitposts98 publish failed: {exc}")
+        hint = ("\n토큰이 만료됐거나 끊긴 것 같아요. plutogram 앱에서 토큰을 다시 생성해 "
+                "IG_ACCESS_TOKEN secret을 바꿔주세요.") if '"code":190' in str(exc).replace(" ", "") else ""
+        notify_slack(f"❌ shitposts98 publish failed: {exc}{hint}")
         raise
 
     card.update(status="published", published_at=time.time(), **result)
