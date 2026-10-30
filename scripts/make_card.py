@@ -15,6 +15,7 @@ Prints the card JSON path, and exposes it as the `card` step output.
 from __future__ import annotations
 
 import argparse
+import os
 import hashlib
 import json
 import sys
@@ -36,7 +37,9 @@ def make(llm=writer.call_llm, render=None) -> Path | None:
 
     cfg = load_config()
     cards = all_cards()
-    if published_last_24h(cards) >= cfg["daily_cap"]:
+    # A dry run posts nothing, so it shouldn't be blocked by the posting cap.
+    dry_run = os.environ.get("DRY_RUN") == "true"
+    if not dry_run and published_last_24h(cards) >= cfg["daily_cap"]:
         print(f"[make] daily cap {cfg['daily_cap']} reached; not posting.")
         return None
 
@@ -69,7 +72,6 @@ def make(llm=writer.call_llm, render=None) -> Path | None:
 def annotate(text: str, model: str | None) -> None:
     """On GitHub Actions, show the line on the run's summary page (as a notice
     annotation), so it can be read without downloading the artifact."""
-    import os
     if os.environ.get("GITHUB_ACTIONS") != "true":
         return
     body = text.replace("%", "%25").replace("\r", "").replace("\n", "%0A")

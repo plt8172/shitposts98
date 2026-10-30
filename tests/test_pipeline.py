@@ -129,3 +129,14 @@ def test_llm_errors_count_as_failed_attempts(monkeypatch):
 
 def test_slash_marker_becomes_line_break():
     assert writer.clean("nobody: / me at 3am: buying a lamp") == "nobody:\nme at 3am: buying a lamp"
+
+
+def test_dry_run_ignores_daily_cap(cards_dir, monkeypatch):
+    day = cards_dir / "2026-10-30"
+    day.mkdir()
+    for i in range(common.load_config()["daily_cap"]):
+        (day / f"c{i}.json").write_text(json.dumps({
+            "id": f"c{i}", "date": "2026-10-30", "text": f"post {i}",
+            "created_at": time.time(), "status": "published", "published_at": time.time()}))
+    monkeypatch.setenv("DRY_RUN", "true")
+    assert make_card.make(llm=lambda p: "my toaster has more rizz than me", render=fake_render) is not None
