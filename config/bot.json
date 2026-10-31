@@ -5,6 +5,8 @@
   "avatar": null,
   "caption": "",
   "daily_cap": 3,
+  "writer": "queue",
+  "llm_fallback": false,
   "ig_user_id": "17841434195965638",
   "ig_api_version": "v26.0",
   "graph_host": "https://graph.facebook.com",

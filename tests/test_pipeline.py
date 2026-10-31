@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import common  # noqa: E402
 import make_card  # noqa: E402
 import publish  # noqa: E402
+import queue_lines  # noqa: E402
 import writer  # noqa: E402
 
 
@@ -19,8 +20,11 @@ def cards_dir(tmp_path, monkeypatch):
     monkeypatch.setattr(make_card, "CARDS_DIR", tmp_path)
     monkeypatch.setattr(make_card, "STOP_FILE", tmp_path / "STOP")
     monkeypatch.setenv("IG_ACCESS_TOKEN", "test-token")
+    monkeypatch.setattr(common, "QUEUE_DIR", tmp_path / "queue")
     cfg = {**common.load_config(), "ig_user_id": "17841400000000000"}
     monkeypatch.setattr(publish, "load_config", lambda: cfg)
+    # Most tests drive the LLM path with a stub; queue tests switch it back.
+    monkeypatch.setattr(make_card, "load_config", lambda: {**cfg, "writer": "llm"})
     monkeypatch.delenv("SLACK_WEBHOOK_URL", raising=False)
     return tmp_path
 
@@ -140,3 +144,58 @@ def test_dry_run_ignores_daily_cap(cards_dir, monkeypatch):
             "created_at": time.time(), "status": "published", "published_at": time.time()}))
     monkeypatch.setenv("DRY_RUN", "true")
     assert make_card.make(llm=lambda p: "my toaster has more rizz than me", render=fake_render) is not None
+
+
+def use_queue(monkeypatch, fallback=False):
+    cfg = {**common.load_config(), "writer": "queue", "llm_fallback": fallback}
+    monkeypatch.setattr(make_card, "load_config", lambda: cfg)
+
+
+def test_queue_add_checks_lines(cards_dir):
+    results = dict(queue_lines.add([
+        "my wifi has commitment issues",
+        "my wifi has commitment issues",          # duplicate of the line above
+        "vote in the election bro",               # banned
+        "nobody: / me at 3am: buying a lamp",
+    ]))
+    assert results["my wifi has commitment issues"] is not None  # second copy rejected
+    assert results["vote in the election bro"].startswith("banned")
+    assert [p.read_text().strip() for p in queue_lines.pending()] == [
+        "my wifi has commitment issues", "nobody:\nme at 3am: buying a lamp"]
+
+
+def test_make_takes_oldest_queued_line(cards_dir, monkeypatch):
+    use_queue(monkeypatch)
+    queue_lines.add(["first queued line about socks", "second queued line about toast"])
+    path = make_card.make(llm=lambda p: pytest.fail("LLM called with a full queue"), render=fake_render)
+    card = json.loads(path.read_text())
+    assert card["text"] == "first queued line about socks" and card["llm_model"] == "claude (queue)"
+    assert len(queue_lines.pending()) == 1
+
+
+def test_dry_run_does_not_consume_queue(cards_dir, monkeypatch):
+    use_queue(monkeypatch)
+    monkeypatch.setenv("DRY_RUN", "true")
+    queue_lines.add(["my toaster has more rizz than me"])
+    assert make_card.make(render=fake_render) is not None
+    assert len(queue_lines.pending()) == 1
+
+
+def test_empty_queue_posts_nothing_unless_fallback(cards_dir, monkeypatch):
+    use_queue(monkeypatch)
+    assert make_card.make(llm=lambda p: pytest.fail("fallback is off"), render=fake_render) is None
+    use_queue(monkeypatch, fallback=True)
+    path = make_card.make(llm=lambda p: "my calendar is a list of things i avoid", render=fake_render)
+    assert json.loads(path.read_text())["text"] == "my calendar is a list of things i avoid"
+
+
+def test_queued_line_that_became_a_duplicate_is_dropped(cards_dir, monkeypatch):
+    use_queue(monkeypatch)
+    queue_lines.add(["socks vanish in the dryer every week"])
+    day = cards_dir / "2026-10-30"
+    day.mkdir()
+    (day / "old.json").write_text(json.dumps({
+        "id": "old", "date": "2026-10-30", "text": "socks vanish in the dryer every week",
+        "created_at": time.time() - 9e5, "status": "published", "published_at": time.time() - 9e5}))
+    assert make_card.make(render=fake_render) is None
+    assert queue_lines.pending() == []

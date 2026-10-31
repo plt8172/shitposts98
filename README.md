@@ -1,6 +1,6 @@
 # shitposts98
 
-@shitposts98용 무인 텍스트 밈 봇입니다. LLM이 드립 한 줄을 쓰면 트윗 캡처 스타일 카드(1080×1350 JPEG)로 렌더링해서 승인 없이 Instagram에 올리고, 올린 뒤 Slack에 알립니다.
+@shitposts98용 무인 텍스트 밈 봇입니다. Claude가 드립을 미리 써서 큐에 넣어 두면 트윗 캡처 스타일 카드(1080×1350 JPEG)로 렌더링해서 승인 없이 Instagram에 올리고, 올린 뒤 Slack에 알립니다.
 
 목적은 계정 클렌징이에요. 최근 30일 피드의 과반을 오리지널로 채워서 추천 자격을 되찾고, 퍼온 밈은 그대로 병행합니다.
 
@@ -16,12 +16,14 @@
 
 Semifeed의 Worker는 **Slack 버튼 콜백을 받으려고** 있어요. 이 봇은 승인이 없어서 밖에서 들어오는 요청이 없고, Worker가 할 일이 없어요. 반대로 카드 렌더링에는 Chromium이 필요한데, Worker에서는 돌릴 수 없어요. 그래서 cron, Chromium, git 커밋을 한곳에서 할 수 있는 GitHub Actions 하나로 끝냈어요. 서버도, Cloudflare 계정도, 이미지 호스팅 키도 필요 없어요.
 
-기사 선별 같은 판단이 필요 없어서 Claude 예약 작업 대신 LLM API 한 번 호출로 충분해요. 기본값은 OpenRouter의 무료 라우터 `openrouter/free`로, 요청마다 무료 모델 하나를 무작위로 골라 써서 비용이 없어요.
+드립은 **Claude Code 예약 작업**이 하루 한 번 써서 `queue/`에 커밋해요([`docs/WRITE.md`](docs/WRITE.md)). 처음엔 OpenRouter 무료 모델(`openrouter/free`)이 매번 쓰게 했는데, 모델이 무작위라 말투가 안 맞고 펀치라인 없는 글이 나와서 바꿨어요. 예약 작업은 글만 쓰고, 렌더와 게시는 그대로 Actions가 해요. 그래서 예약 작업에는 Instagram 토큰도, 네트워크 허용도 필요 없고 이 저장소 푸시 권한만 있으면 돼요.
+
+큐는 2일치(6줄)를 채워 둬서 예약 작업이 하루 빠져도 게시는 이어져요. 큐가 비면 아무것도 올리지 않고 Slack으로 알려요. `config/bot.json`에서 `"llm_fallback": true`로 바꾸면 큐가 빌 때 예전처럼 LLM API로 쓰고, `"writer": "llm"`으로 바꾸면 예전 방식으로 완전히 돌아가요.
 
 ## 한 번 실행 = 최대 1개 게시
 
 ```
-make_card.py  → 드립 작성(필터 통과 시) → cards/<날짜>/<id>.jpg + .json
+make_card.py  → 큐에서 가장 오래된 드립 꺼냄(필터 재검사) → cards/<날짜>/<id>.jpg + .json
 git push      → raw URL이 열림
 publish.py    → Graph API로 게시 → 카드 JSON에 permalink 기록 → Slack 알림
 git push      → 결과 저장 (중복 방지·일일 제한의 근거)
@@ -39,10 +41,13 @@ git push      → 결과 저장 (중복 방지·일일 제한의 근거)
 ## 파일
 
 ```
-config/bot.json            계정 이름·테마·일일 제한·IG 사용자 ID·raw URL·LLM 모델
+config/bot.json            계정 이름·테마·일일 제한·글 출처(writer)·IG 사용자 ID·raw URL·LLM 모델
 config/style_examples.txt  말투 기준 문장 — 유머 튜닝은 여기서
 config/banned_words.txt    추가 금지어
-scripts/writer.py          LLM 호출 + 필터
+scripts/writer.py          필터 (+ LLM 호출, fallback용)
+scripts/queue_lines.py     드립 큐: 예약 작업이 add, 워크플로가 take
+queue/                     게시 대기 중인 드립 (한 줄 = 한 파일)
+docs/WRITE.md              Claude 예약 작업이 매일 따르는 절차
 scripts/render.py          텍스트 → 카드 JPEG (Playwright, 폰트 내장)
 scripts/make_card.py       1단계: 카드 생성
 scripts/publish.py         2단계: Instagram 게시

@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG_DIR = ROOT / "config"
 CARDS_DIR = Path(os.environ.get("CARDS_DIR", ROOT / "cards"))
 STOP_FILE = ROOT / "STOP"
+QUEUE_DIR = Path(os.environ.get("QUEUE_DIR", ROOT / "queue"))
 
 
 def load_config() -> dict:
