@@ -8,7 +8,13 @@ Exit without making anything when:
 - a STOP file exists at the repo root (pause the bot from the GitHub app by
   adding a file named STOP; delete it to resume),
 - the daily cap of published posts is already reached,
-- every generated line is rejected by the writer's checks.
+- there is no acceptable line: the queue is empty (or every queued line
+  fails the checks) and LLM fallback is off, or every LLM line is rejected.
+
+Where the line comes from is config/bot.json → "writer":
+- "queue" (default): the oldest line Claude queued (scripts/queue_lines.py).
+  With "llm_fallback": true, an empty queue falls back to the LLM API.
+- "llm": the LLM API every run (the original setup).
 
 Prints the card JSON path, and exposes it as the `card` step output.
 """
@@ -23,6 +29,7 @@ import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import queue_lines
 import writer
 from common import (CARDS_DIR, ROOT, STOP_FILE, all_cards, load_config,
                     notify_slack, published_last_24h, set_output)
@@ -43,10 +50,22 @@ def make(llm=writer.call_llm, render=None) -> Path | None:
         print(f"[make] daily cap {cfg['daily_cap']} reached; not posting.")
         return None
 
-    text = writer.write_post([c["text"] for c in cards], llm=llm)
+    history = [c["text"] for c in cards]
+    text, source = None, None
+    if cfg.get("writer", "llm") == "queue":
+        text = queue_lines.take(history, consume=not dry_run)
+        source = "claude (queue)"
+        if text is None:
+            print("[make] queue empty.")
+    if text is None and (cfg.get("writer", "llm") == "llm" or cfg.get("llm_fallback")):
+        text = writer.write_post(history, llm=llm)
+        source = writer.LAST_MODEL
     if text is None:
-        notify_slack("⚠️ shitposts98: every generated line was rejected; nothing posted.")
-        print("[make] no acceptable line; nothing posted.")
+        why = ("the line queue is empty — the Claude writing task may have stopped"
+               if cfg.get("writer", "llm") == "queue" and not cfg.get("llm_fallback")
+               else "every generated line was rejected")
+        notify_slack(f"⚠️ shitposts98: {why}; nothing posted.")
+        print(f"[make] {why}; nothing posted.")
         return None
 
     now = time.time()
@@ -62,10 +81,10 @@ def make(llm=writer.call_llm, render=None) -> Path | None:
            theme=cfg["theme"], avatar=avatar)
 
     card = {"id": card_id, "date": day, "text": text, "created_at": now, "status": "made",
-            "llm_model": writer.LAST_MODEL}
+            "llm_model": source}
     json_path.write_text(json.dumps(card, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"[make] {json_path.relative_to(ROOT) if json_path.is_relative_to(ROOT) else json_path}\n{text}")
-    annotate(text, writer.LAST_MODEL)
+    annotate(text, source)
     return json_path
 
 
