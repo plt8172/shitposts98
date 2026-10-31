@@ -1,0 +1,52 @@
+# Feasibility test: can yunoballizer collect memes from a GitHub Actions runner
+# in anonymous mode (no Instagram login)? Manual trigger only; nothing is
+# committed or posted. Results show up as run annotations.
+name: collect-test
+
+on:
+  workflow_dispatch:
+    inputs:
+      accounts:
+        description: "Space-separated source accounts"
+        default: "uncrustamemes mcfreakery"
+      limit:
+        description: "Posts per account"
+        default: "2"
+
+permissions:
+  contents: read
+
+jobs:
+  collect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install yunoballizer
+        run: pip install -q "git+https://github.com/plt8172/yunoballizer"
+      - name: Download (anonymous)
+        id: dl
+        continue-on-error: true
+        env:
+          YUNOBALLIZER_DATA_DIR: ${{ runner.temp }}/yuno
+        run: |
+          set -o pipefail
+          for a in ${{ inputs.accounts }}; do
+            yuno download "@$a" -p instagram -l ${{ inputs.limit }} --no-login --delay 5 2>&1 | tail -20 | tee -a dl.log || true
+          done
+      - name: Report
+        env:
+          YUNOBALLIZER_DATA_DIR: ${{ runner.temp }}/yuno
+        run: |
+          root="$YUNOBALLIZER_DATA_DIR/downloaded/instagram"
+          n=$(find "$root" -mindepth 2 -maxdepth 2 -type d 2>/dev/null | wc -l)
+          media=$(find "$root" -type f \( -name '*.jpg' -o -name '*.mp4' -o -name '*.webp' \) 2>/dev/null | wc -l)
+          echo "::notice title=collect result::posts=$n media_files=$media"
+          for d in $(find "$root" -mindepth 2 -maxdepth 2 -type d 2>/dev/null); do
+            cap=$(head -c 140 "$d/caption.txt" 2>/dev/null | tr '\n' ' ')
+            echo "::notice title=post $(basename $(dirname $d))/$(basename $d)::$(ls $d | tr '\n' ' ') | $cap"
+          done
+          err=$(grep -iE "error|login|429|401|403|redirect|checkpoint|Please wait" dl.log 2>/dev/null | head -5 | tr '\n' ' ' | cut -c1-900)
+          [ -n "$err" ] && echo "::warning title=collect errors::$err" || true
