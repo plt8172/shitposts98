@@ -4,7 +4,7 @@
   "theme": "light",
   "avatar": null,
   "caption": "",
-  "daily_cap": 4,
+  "daily_cap": 3,
   "writer": "queue",
   "llm_fallback": false,
   "ig_user_id": "17841434195965638",
