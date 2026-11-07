@@ -3,6 +3,9 @@
   "date": "2026-11-08",
   "text": "i have 412 saved recipes and tonight i ate cereal over the sink 🥀",
   "created_at": 1794066862.4890506,
-  "status": "made",
-  "llm_model": "claude (queue)"
+  "status": "published",
+  "llm_model": "claude (queue)",
+  "published_at": 1794066881.624408,
+  "media_id": "18145928434717116",
+  "permalink": "https://www.instagram.com/p/DfcjOo-mMa7/"
 }
